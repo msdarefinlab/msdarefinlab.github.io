@@ -1,0 +1,35 @@
+name: Fetch News
+
+on:
+  schedule:
+    - cron: "0 */3 * * *"   # প্রতি ৩ ঘণ্টা পরপর
+  workflow_dispatch:         # হাতে চালানোর বাটন
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install feedparser requests
+
+      - name: Run script
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python scripts/fetch_news.py
+
+      - name: Commit and push
+        run: |
+          git config user.name "news-bot"
+          git config user.email "news-bot@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet || git commit -m "Add new posts"
+          git push
