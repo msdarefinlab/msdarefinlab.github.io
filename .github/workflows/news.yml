@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: fetch-news
+  cancel-in-progress: false
+
 jobs:
   fetch:
     runs-on: ubuntu-latest
@@ -32,4 +36,5 @@ jobs:
           git config user.email "news-bot@users.noreply.github.com"
           git add -A
           git diff --cached --quiet || git commit -m "Add new posts"
+          git pull --rebase origin main
           git push
