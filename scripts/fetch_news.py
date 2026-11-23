@@ -70,6 +70,32 @@ def collect():
     return items
 
 
+def pick_model():
+    """এই Key দিয়ে যে মডেলগুলো চলে সেগুলো খুঁজে সবচেয়ে উপযুক্তটা বেছে নেয়"""
+    r = requests.get(
+        "https://generativelanguage.googleapis.com/v1beta/models?pageSize=200",
+        headers={"x-goog-api-key": API_KEY},
+        timeout=30,
+    )
+    print("ListModels status:", r.status_code)
+    if r.status_code != 200:
+        print("ListModels body:", r.text[:400])
+        return None
+    names = [
+        m["name"].split("/", 1)[1]
+        for m in r.json().get("models", [])
+        if "generateContent" in m.get("supportedGenerationMethods", [])
+    ]
+    print("Available models:", names)
+    flash = [n for n in names if "flash" in n and "lite" not in n
+             and "image" not in n and "tts" not in n and "live" not in n]
+    lite = [n for n in names if "flash" in n and "lite" in n]
+    for group in (flash, lite, names):
+        if group:
+            return sorted(group, reverse=True)[0]
+    return None
+
+
 def rewrite(title):
     prompt = (
         "তুমি একজন বাংলা স্পোর্টস নিউজ এডিটর। নিচের হেডলাইন থেকে একটি সংক্ষিপ্ত নিউজ ব্রিফ লেখো।\n"
@@ -87,12 +113,19 @@ def rewrite(title):
         },
         timeout=60,
     )
-    r.raise_for_status()
+    if r.status_code != 200:
+        raise RuntimeError(f"{r.status_code}: {r.text[:300]}")
     text = r.json()["candidates"][0]["content"]["parts"][0]["text"]
     return json.loads(text)
 
 
 def main():
+    global MODEL
+    picked = pick_model()
+    if picked:
+        MODEL = picked
+    print("Using model:", MODEL)
+    errors = 0
     seen = load_seen()
     os.makedirs("_posts", exist_ok=True)
     made = 0
@@ -106,8 +139,13 @@ def main():
             out = rewrite(it["title"])
         except Exception as ex:
             print("Gemini error:", ex)
-            time.sleep(10)
+            errors += 1
+            if errors >= 3:
+                print("Too many errors, stopping.")
+                break
+            time.sleep(5)
             continue
+        errors = 0
         now = datetime.datetime.now(datetime.timezone.utc)
         fname = f"_posts/{now:%Y-%m-%d}-{h}.md"
         title = out["title"].replace('"', "'")
