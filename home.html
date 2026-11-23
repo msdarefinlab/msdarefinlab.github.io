@@ -1,0 +1,33 @@
+---
+layout: default
+---
+{% assign list = site.posts | slice: 0, 40 %}
+<div class="tabs" role="tablist">
+  <button class="on" data-f="all">সব খবর</button>
+  <button data-f="cricket">🏏 ক্রিকেট</button>
+  <button data-f="football">⚽ ফুটবল</button>
+  <button data-f="other">🏆 অন্যান্য</button>
+</div>
+
+{% if list.size == 0 %}
+  <p class="empty">খবর আসছে, একটু অপেক্ষা করুন…</p>
+{% else %}
+  <div class="grid">
+    {% for post in list %}
+      {% include card.html post=post big=forloop.first %}
+    {% endfor %}
+  </div>
+{% endif %}
+
+<script>
+  document.querySelectorAll('.tabs button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.querySelectorAll('.tabs button').forEach(function (x) { x.classList.remove('on'); });
+      b.classList.add('on');
+      var f = b.getAttribute('data-f');
+      document.querySelectorAll('.grid .card').forEach(function (c) {
+        c.style.display = (f === 'all' || c.getAttribute('data-cat') === f) ? '' : 'none';
+      });
+    });
+  });
+</script>

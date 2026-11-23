@@ -1,0 +1,14 @@
+{%- assign p = include.post -%}
+{%- assign c = p.cat | default: "other" -%}
+{%- if c == "cricket" -%}{%- assign e = "🏏" -%}{%- assign cb = "ক্রিকেট" -%}
+{%- elsif c == "football" -%}{%- assign e = "⚽" -%}{%- assign cb = "ফুটবল" -%}
+{%- else -%}{%- assign e = "🏆" -%}{%- assign cb = "খেলা" -%}{%- endif -%}
+{%- assign t = p.teaser | default: p.excerpt | strip_html | strip | truncate: 110 -%}
+<a class="card{% if include.big %} big{% endif %}" data-cat="{{ c }}" href="{{ p.url | relative_url }}">
+  <div class="banner cat-{{ c }}"><span>{{ e }}</span>{% if p.trending %}<b class="hot">🔥 ট্রেন্ডিং</b>{% endif %}</div>
+  <div class="cbody">
+    <div class="meta"><span class="tag">{{ cb }}</span><span>{% include bn_date.html d=p.date %}</span></div>
+    <h3>{{ p.title }}</h3>
+    <p>{{ t }}</p>
+  </div>
+</a>

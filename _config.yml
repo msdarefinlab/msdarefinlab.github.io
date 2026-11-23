@@ -1,7 +1,18 @@
 title: বাংলা স্পোর্টস নিউজ
-description: বাংলাদেশ ও আন্তর্জাতিক খেলার খবর
+description: বাংলাদেশ ও আন্তর্জাতিক খেলার সর্বশেষ খবর, এক নজরে
 lang: bn
+url: "https://msdarefinlab.github.io"
 timezone: Asia/Dhaka
-theme: minima
+permalink: /news/:year/:month/:day/:title/
+
 plugins:
   - jekyll-feed
+  - jekyll-seo-tag
+  - jekyll-sitemap
+
+defaults:
+  - scope:
+      path: ""
+      type: posts
+    values:
+      layout: post

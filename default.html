@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ '/assets/style.css' | relative_url }}">
+  {% seo %}
+  {% feed_meta %}
+</head>
+<body>
+  <header class="top">
+    <div class="wrap bar">
+      <a class="logo" href="{{ '/' | relative_url }}">🏆 <span>বাংলা স্পোর্টস নিউজ</span></a>
+      <span class="tagline">বাংলাদেশ ও বিশ্বের খেলার খবর</span>
+    </div>
+  </header>
+
+  {% if site.posts.size > 0 %}
+  <div class="ticker">
+    <span class="live">🔴 সর্বশেষ</span>
+    <div class="track"><div class="slide">
+      {% for p in site.posts limit:6 %}<a href="{{ p.url | relative_url }}">{{ p.title }}</a>{% endfor %}
+      {% for p in site.posts limit:6 %}<a href="{{ p.url | relative_url }}">{{ p.title }}</a>{% endfor %}
+    </div></div>
+  </div>
+  {% endif %}
+
+  <main class="wrap">
+    {{ content }}
+  </main>
+
+  <footer class="foot">
+    <div class="wrap">
+      <strong>বাংলা স্পোর্টস নিউজ</strong>
+      <p>এই সাইটের সংক্ষিপ্ত খবরগুলো বাংলাদেশের সংবাদমাধ্যমের প্রকাশিত শিরোনাম অবলম্বনে এআই-এর সহায়তায় স্বয়ংক্রিয়ভাবে তৈরি। পূর্ণ ও নির্ভুল তথ্যের জন্য প্রতিটি খবরের নিচে দেওয়া মূল সূত্র দেখুন।</p>
+    </div>
+  </footer>
+</body>
+</html>
