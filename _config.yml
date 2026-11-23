@@ -1,0 +1,7 @@
+title: বাংলা স্পোর্টস নিউজ
+description: বাংলাদেশ ও আন্তর্জাতিক খেলার খবর
+lang: bn
+timezone: Asia/Dhaka
+theme: minima
+plugins:
+  - jekyll-feed
