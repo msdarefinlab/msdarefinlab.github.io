@@ -70,8 +70,37 @@ def collect():
     return items
 
 
+# অগ্রাধিকার তালিকা: স্থিতিশীল ও ফ্রি-কোটাযুক্ত মডেল আগে
+PREFERRED = [
+    "gemini-2.5-flash-lite",
+    "gemini-2.5-flash",
+    "gemini-flash-lite-latest",
+    "gemini-flash-latest",
+    "gemini-3.1-flash-lite",
+    "gemini-3.5-flash-lite",
+    "gemini-3.5-flash",
+]
+
+
+def probe(model):
+    """একটা ছোট অনুরোধ পাঠিয়ে দেখে মডেলটা কাজ করে কিনা"""
+    try:
+        r = requests.post(
+            f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
+            headers={"x-goog-api-key": API_KEY, "Content-Type": "application/json"},
+            json={"contents": [{"parts": [{"text": "বাংলায় একটি শব্দ লেখো: খেলা"}]}]},
+            timeout=40,
+        )
+        print(f"Probe {model}: {r.status_code}")
+        if r.status_code != 200:
+            print("   ", r.text[:200].replace("\n", " "))
+        return r.status_code == 200
+    except Exception as ex:
+        print(f"Probe {model} failed:", ex)
+        return False
+
+
 def pick_model():
-    """এই Key দিয়ে যে মডেলগুলো চলে সেগুলো খুঁজে সবচেয়ে উপযুক্তটা বেছে নেয়"""
     r = requests.get(
         "https://generativelanguage.googleapis.com/v1beta/models?pageSize=200",
         headers={"x-goog-api-key": API_KEY},
@@ -81,18 +110,15 @@ def pick_model():
     if r.status_code != 200:
         print("ListModels body:", r.text[:400])
         return None
-    names = [
+    names = {
         m["name"].split("/", 1)[1]
         for m in r.json().get("models", [])
         if "generateContent" in m.get("supportedGenerationMethods", [])
-    ]
-    print("Available models:", names)
-    flash = [n for n in names if "flash" in n and "lite" not in n
-             and "image" not in n and "tts" not in n and "live" not in n]
-    lite = [n for n in names if "flash" in n and "lite" in n]
-    for group in (flash, lite, names):
-        if group:
-            return sorted(group, reverse=True)[0]
+    }
+    for model in PREFERRED:
+        if model in names and probe(model):
+            return model
+        time.sleep(2)
     return None
 
 
@@ -122,8 +148,10 @@ def rewrite(title):
 def main():
     global MODEL
     picked = pick_model()
-    if picked:
-        MODEL = picked
+    if not picked:
+        print("কোনো মডেল কাজ করেনি (কোটা বা Key সমস্যা)। পরে আবার চেষ্টা হবে।")
+        return
+    MODEL = picked
     print("Using model:", MODEL)
     errors = 0
     seen = load_seen()
